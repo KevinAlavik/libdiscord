@@ -1,0 +1,14 @@
+{
+  "name": "libdiscord",
+  "version": "0.0.1",
+  "description": "A library to communicate with the discord API",
+  "main": "src/libdiscord.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kevin Alavik",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^8.15.1"
+  }
+}
