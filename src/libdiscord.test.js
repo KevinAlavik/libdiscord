@@ -8,7 +8,8 @@ client.on("READY", () => {
 })
 
 client.on("MESSAGE_CREATE", (m) => {
-    console.log("[EVENT] Got GUILD_MESSAGE, content: " + e.content);
+    console.log("[EVENT] Got GUILD_MESSAGE, content: " + m.content);
+    
 })
 
 client.login();
