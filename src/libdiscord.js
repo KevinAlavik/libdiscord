@@ -23,7 +23,6 @@ const Intents = {
     AUTO_MODERATION_EXECUTION: 1 << 21,
 };
 
-
 class libdiscord {
     constructor(token, app, intents) {
         this.gateway = "wss://gateway.discord.gg?v=10&encoding=json";
@@ -37,8 +36,9 @@ class libdiscord {
 
     login() {
         this.ws.on('open', () => {
+            console.log("[EVENT] Connected to the Discord Gateway");
             this.start_socket_communication();
-        })
+        });
 
         this.ws.on('close', (code) => {
             console.log(`[EVENT] Disconnected from the Discord Gateway (code: ${code}). Trying to reconnect...`);
@@ -64,13 +64,13 @@ class libdiscord {
                         this.handle_socket_dispatch_payload(payload);
                         break;
                     default:
-                        //console.log("[EVENT] Got payload opcode: " + payload.op +". Payload: " + JSON.stringify(payload));
+
                         break;
                 }
             } catch (error) {
                 console.error('[EVENT] Error while parsing the payload message:', error);
             }
-        })
+        });
     }
 
     start_socket_communication() {
@@ -94,15 +94,9 @@ class libdiscord {
                 console.log("[EVENT] Started socket communication between discord and you.");
             }
         });
-
-        this.ws.on('error', (error) => {
-            console.error('[EVENT] WebSocket error during communication:', error);
-            this.login()
-        });
     }
 
     start_socket_hartbeat(interval) {
-
         setInterval(() => {
             const payload = {
                 op: 1,
@@ -118,7 +112,7 @@ class libdiscord {
     }
 
     handle_socket_dispatch_payload(payload) {
-        //TODO: Add message parsing to add .reply and etc
+
         const { t, d } = payload;
         if (this.eventHandlers[t]) {
             this.eventHandlers[t](d);
@@ -130,4 +124,37 @@ class libdiscord {
     }
 }
 
-module.exports = { libdiscord, Intents }
+class API {
+    constructor(token) {
+        this.token = token
+    }
+
+    async send_guild_message(channelId, content) {
+        const endpoint = `https://discord.com/api/v10/channels/${channelId}/messages`;
+        const payload = {
+            content,
+        };
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bot ${this.token}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                console.error('[EVENT] Failed to send message:', response.status, response.statusText);
+                return;
+            }
+
+            console.log('[EVENT] Sent message successfully');
+        } catch (error) {
+            console.error('[EVENT] Failed to send message:', error);
+        }
+    }
+}
+
+module.exports = { libdiscord, API, Intents }
