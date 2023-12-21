@@ -126,13 +126,17 @@ class libdiscord {
 
 class API {
     constructor(token) {
-        this.token = token
+        this.token = token;
     }
 
-    async send_guild_message(channelId, content) {
-        const endpoint = `https://discord.com/api/v10/channels/${channelId}/messages`;
+    async send_guild_content(channelId, content, ...embeds) {
+        await this.send_content(`https://discord.com/api/v10/channels/${channelId}/messages`, content, ...embeds);
+    }
+
+    async send_content(endpoint, content, ...embeds) {
         const payload = {
             content,
+            embeds,
         };
 
         try {
@@ -146,15 +150,86 @@ class API {
             });
 
             if (!response.ok) {
-                console.error('[EVENT] Failed to send message:', response.status, response.statusText);
+                console.error(response.status, response.statusText);
                 return;
             }
 
             console.log('[EVENT] Sent message successfully');
         } catch (error) {
-            console.error('[EVENT] Failed to send message:', error);
+            console.error('[EVENT] Message sending error:', error);
         }
     }
 }
 
-module.exports = { libdiscord, API, Intents }
+class EmbedBuilder {
+    constructor(config = {}) {
+        this.embed = config;
+    }
+
+    setTitle(title) {
+        this.embed.title = title;
+        return this;
+    }
+
+    setDescription(description) {
+        this.embed.description = description;
+        return this;
+    }
+
+    setAuthor(name, iconURL, url) {
+        this.embed.author = {
+            name,
+            iconURL,
+            url,
+        };
+        return this;
+    }
+
+    setColor(color) {
+        this.embed.color = color;
+        return this;
+    }
+
+    setFooter(text, iconURL) {
+        this.embed.footer = {
+            text,
+            iconURL,
+        };
+        return this;
+    }
+
+    setImage(url) {
+        this.embed.image = {
+            url,
+        };
+        return this;
+    }
+
+    setThumbnail(url) {
+        this.embed.thumbnail = {
+            url,
+        };
+        return this;
+    }
+
+    addField(name, value, inline = false) {
+        if (!this.embed.fields) {
+            this.embed.fields = [];
+        }
+
+        this.embed.fields.push({
+            name,
+            value,
+            inline,
+        });
+
+        return this;
+    }
+
+    build() {
+        console.log("[EVENT] EmbedBuilder: Built embed with title: " + this.embed.title)
+        return this.embed;
+    }
+}
+
+module.exports = { libdiscord, API, Intents, EmbedBuilder }
